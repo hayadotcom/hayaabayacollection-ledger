@@ -6,6 +6,10 @@
 <title>Hayaabaya's Collection — Ledger</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Firebase (for real cross-device cloud storage) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
   :root{
     --ink:#1B1A17;
@@ -32,7 +36,7 @@
     -webkit-font-smoothing:antialiased;
   }
   .app{max-width:1080px;margin:0 auto;padding:20px 18px 60px;}
-
+ 
   /* ---------- Header ---------- */
   header.brand{
     display:flex;
@@ -65,7 +69,7 @@
     opacity:0.55;
     margin:2px 0 22px;
   }
-
+ 
   /* ---------- Nav ---------- */
   nav.tabs{
     display:flex;
@@ -96,7 +100,7 @@
     color:var(--cream);
     border-color:var(--ink);
   }
-
+ 
   /* ---------- Cards ---------- */
   .card{
     background:var(--white);
@@ -108,7 +112,7 @@
   .card-top-stitch{
     border-top:3px dashed var(--gold);
   }
-
+ 
   section{margin-bottom:26px;}
   h2.section-title{
     font-family:'Playfair Display',serif;
@@ -117,7 +121,7 @@
     margin:0 0 14px;
     color:var(--ink);
   }
-
+ 
   /* ---------- Dashboard stat grid ---------- */
   .stat-grid{
     display:grid;
@@ -142,7 +146,7 @@
   }
   .stat.profit .value{color:var(--green);}
   .stat.due .value{color:var(--maroon);}
-
+ 
   /* ---------- Forms ---------- */
   .form-grid{
     display:grid;
@@ -170,7 +174,7 @@
   }
   .field input:focus, .field textarea:focus{border-color:var(--gold);background:var(--white);}
   .field textarea{resize:vertical;min-height:56px;font-family:'Inter',sans-serif;}
-
+ 
   .computed-row{
     display:flex;
     gap:22px;
@@ -189,7 +193,7 @@
     color:var(--ink);
     margin-top:2px;
   }
-
+ 
   .btn-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
   button.primary{
     background:var(--ink);
@@ -214,7 +218,7 @@
     cursor:pointer;
   }
   button.secondary:hover{border-color:var(--ink-soft);}
-
+ 
   /* ---------- Table ---------- */
   .table-tools{
     display:flex;
@@ -273,7 +277,7 @@
     color:var(--ink-soft);
     font-size:14px;
   }
-
+ 
   /* customers grid */
   .cust-grid{
     display:grid;
@@ -289,7 +293,7 @@
   .cust-card .phone{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;}
   .cust-card .rowmini{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
   .cust-card .rowmini b{font-family:'JetBrains Mono',monospace;color:var(--ink);font-weight:600;}
-
+ 
   .toast{
     position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
     background:var(--ink);color:var(--cream);
@@ -299,7 +303,7 @@
     z-index:50;
   }
   .toast.show{opacity:1;}
-
+ 
   .loading{
     text-align:center;padding:60px 20px;color:var(--ink-soft);font-size:14px;
   }
@@ -315,43 +319,101 @@
     </div>
   </header>
   <div class="stitch"></div>
-
+ 
   <nav class="tabs" id="tabs">
     <button data-tab="dashboard" class="active">Dashboard</button>
     <button data-tab="entry">New Entry</button>
     <button data-tab="ledger">All Entries</button>
     <button data-tab="customers">Customers</button>
   </nav>
-
+ 
   <div id="main"><div class="loading">Loading your ledger…</div></div>
 </div>
-
+ 
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--cream);z-index:100;align-items:center;justify-content:center;padding:20px;">
+  <div class="card" style="max-width:340px;width:100%;">
+    <h2 class="section-title">Sign in</h2>
+    <div class="field" style="margin-bottom:12px;">
+      <label>Email</label>
+      <input id="login-email" type="email" placeholder="you@example.com">
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label>Password</label>
+      <input id="login-password" type="password" placeholder="••••••••">
+    </div>
+    <div class="btn-row">
+      <button class="primary" id="login-btn" style="width:100%;">Sign In</button>
+    </div>
+    <div id="login-error" style="color:var(--maroon);font-size:13px;margin-top:10px;"></div>
+  </div>
+</div>
+ 
 <div class="toast" id="toast"></div>
-
+ 
 <script>
-const STORAGE_KEY = 'transactions';
+// ---------- FIREBASE CONFIG ----------
+// 1. Go to https://console.firebase.google.com -> Create project
+// 2. Add a Web App -> copy the config object it gives you -> paste below
+const firebaseConfig = {
+  apiKey: "AIzaSyBzJM1Y-rPRLJ4SpNTO__w2D9zDLJEi-JQ",
+  authDomain: "hayaabaya-ledger.firebaseapp.com",
+  projectId: "hayaabaya-ledger",
+  storageBucket: "hayaabaya-ledger.firebasestorage.app",
+  messagingSenderId: "93970452933",
+  appId: "1:93970452933:web:3dcdecd9ad2a9118d07bac"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const LEDGER_DOC = db.collection('ledger').doc('data');
+ 
 let transactions = [];
 let editingId = null;
 let dataReady = false;
-
-// ---------- storage helpers ----------
+ 
+// ---------- auth gate ----------
+const loginScreen = document.getElementById('login-screen');
+document.getElementById('login-btn').addEventListener('click', async ()=>{
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  try{
+    await auth.signInWithEmailAndPassword(email, pw);
+  }catch(e){
+    errEl.textContent = 'Could not sign in — check your email and password.';
+  }
+});
+ 
+auth.onAuthStateChanged(async (user)=>{
+  if(user){
+    loginScreen.style.display = 'none';
+    await loadData();
+    setActiveTab('dashboard');
+  }else{
+    loginScreen.style.display = 'flex';
+  }
+});
+ 
+// ---------- storage helpers (Firestore) ----------
 async function loadData(){
   try{
-    const res = await window.storage.get(STORAGE_KEY, false);
-    transactions = res && res.value ? JSON.parse(res.value) : [];
+    const doc = await LEDGER_DOC.get();
+    transactions = doc.exists && doc.data().transactions ? doc.data().transactions : [];
   }catch(e){
     transactions = [];
+    showToast('Could not load data — check your connection');
   }
   dataReady = true;
 }
 async function saveData(){
   try{
-    await window.storage.set(STORAGE_KEY, JSON.stringify(transactions), false);
+    await LEDGER_DOC.set({ transactions });
   }catch(e){
     showToast('Could not save — please try again');
   }
 }
-
+ 
 function showToast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -359,7 +421,7 @@ function showToast(msg){
   clearTimeout(showToast._tm);
   showToast._tm = setTimeout(()=>t.classList.remove('show'), 2200);
 }
-
+ 
 function fmt(n){
   n = Number(n)||0;
   return 'Rs ' + n.toLocaleString('en-US', {maximumFractionDigits:0});
@@ -370,7 +432,7 @@ function todayStr(){
 function uid(){
   return 'tx_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
 }
-
+ 
 // ---------- derived aggregates ----------
 function totals(){
   let sales=0, cost=0, profit=0, received=0, due=0;
@@ -397,7 +459,7 @@ function customerMap(){
   });
   return map;
 }
-
+ 
 // ---------- nav ----------
 document.getElementById('tabs').addEventListener('click', e=>{
   const btn = e.target.closest('button[data-tab]');
@@ -409,7 +471,7 @@ function setActiveTab(tab){
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   render(tab);
 }
-
+ 
 // ---------- render router ----------
 function render(tab){
   const main = document.getElementById('main');
@@ -420,7 +482,7 @@ function render(tab){
   if(tab==='customers') return renderCustomers(main);
   renderDashboard(main);
 }
-
+ 
 // ---------- Dashboard ----------
 function renderDashboard(main){
   const t = totals();
@@ -451,7 +513,7 @@ function renderMiniTable(rows){
     <tbody>${rows.map(r=>rowToHtml(r,false)).join('')}</tbody>
   </table></div>`;
 }
-
+ 
 // ---------- New Entry / Edit ----------
 function renderEntry(main, prefill){
   const t = prefill || {customerName:'',phone:'',item:'',costPrice:'',salePrice:'',paid:'',date:todayStr(),notes:''};
@@ -496,12 +558,12 @@ function renderEntry(main, prefill){
             <textarea id="f-notes" placeholder="Delivery details, fabric, special requests…">${escapeHtml(t.notes)}</textarea>
           </div>
         </div>
-
+ 
         <div class="computed-row" id="computed-row">
           <div>Profit<b id="calc-profit">Rs 0</b></div>
           <div>Balance Due<b id="calc-due">Rs 0</b></div>
         </div>
-
+ 
         <div class="btn-row">
           <button class="primary" id="save-entry">${isEdit ? 'Save Changes' : 'Add Entry'}</button>
           ${isEdit ? '<button class="secondary" id="cancel-edit">Cancel</button>' : ''}
@@ -509,7 +571,7 @@ function renderEntry(main, prefill){
       </div>
     </section>
   `;
-
+ 
   const costEl=document.getElementById('f-cost'), saleEl=document.getElementById('f-sale'), paidEl=document.getElementById('f-paid');
   function recalc(){
     const cost = Number(costEl.value)||0, sale = Number(saleEl.value)||0, paid = Number(paidEl.value)||0;
@@ -518,7 +580,7 @@ function renderEntry(main, prefill){
   }
   [costEl,saleEl,paidEl].forEach(el=>el.addEventListener('input', recalc));
   recalc();
-
+ 
   document.getElementById('save-entry').addEventListener('click', async ()=>{
     const name = document.getElementById('f-name').value.trim();
     if(!name){ showToast('Please enter a customer name'); return; }
@@ -545,11 +607,11 @@ function renderEntry(main, prefill){
     await saveData();
     setActiveTab('ledger');
   });
-
+ 
   const cancelBtn = document.getElementById('cancel-edit');
   if(cancelBtn) cancelBtn.addEventListener('click', ()=>{ editingId=null; setActiveTab('ledger'); });
 }
-
+ 
 // ---------- Ledger (all entries) ----------
 let ledgerFilter = '';
 function renderLedger(main){
@@ -591,7 +653,7 @@ function drawLedgerTable(){
     </tr></thead>
     <tbody>${rows.map(r=>rowToHtml(r,true)).join('')}</tbody>
   </table></div>`;
-
+ 
   host.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>{
     const t = transactions.find(x=>x.id===b.dataset.edit);
     editingId = t.id;
@@ -614,7 +676,7 @@ function rowToHtml(r, withActions){
   if(due<=0) statusPill = `<span class="pill paid">Paid</span>`;
   else if((Number(r.paid)||0) === 0) statusPill = `<span class="pill due">Unpaid</span>`;
   else statusPill = `<span class="pill partial">Partial</span>`;
-
+ 
   if(!withActions){
     return `<tr>
       <td>${r.date}</td><td>${escapeHtml(r.customerName)}</td><td>${escapeHtml(r.item)}</td>
@@ -632,7 +694,7 @@ function rowToHtml(r, withActions){
     </td>
   </tr>`;
 }
-
+ 
 // ---------- Customers ----------
 let selectedCustomerKey = null;
 function renderCustomers(main){
@@ -694,18 +756,16 @@ function renderCustomerDetail(main, key){
     renderCustomers(main);
   });
 }
-
+ 
 // ---------- utils ----------
 function escapeHtml(s){
   return (s??'').toString().replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 function escapeAttr(s){ return escapeHtml(s); }
-
+ 
 // ---------- boot ----------
-(async function init(){
-  await loadData();
-  setActiveTab('dashboard');
-})();
+// App now boots from auth.onAuthStateChanged above once sign-in completes.
 </script>
 </body>
 </html>
+ 
