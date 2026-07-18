@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hayaabaya's Collection — Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1A17;
+    --ink-soft:#3A362E;
+    --cream:#F7F1E6;
+    --cream-dim:#EFE7D6;
+    --gold:#B8935A;
+    --gold-bright:#D4AF6A;
+    --maroon:#6E2A38;
+    --maroon-soft:#8C4152;
+    --green:#3E5C46;
+    --line:#DED2B4;
+    --white:#FFFDF8;
+    --radius:10px;
+    --shadow: 0 2px 14px rgba(27,26,23,0.08);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:1080px;margin:0 auto;padding:20px 18px 60px;}
+
+  /* ---------- Header ---------- */
+  header.brand{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:18px 4px 20px;
+    flex-wrap:wrap;
+  }
+  .brand-name{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:clamp(26px,4vw,34px);
+    color:var(--ink);
+    letter-spacing:0.2px;
+  }
+  .brand-name span{color:var(--gold);font-style:normal;}
+  .brand-tag{
+    font-size:12px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .stitch{
+    height:8px;
+    width:100%;
+    background-image: repeating-linear-gradient(90deg, var(--gold) 0 10px, transparent 10px 20px);
+    opacity:0.55;
+    margin:2px 0 22px;
+  }
+
+  /* ---------- Nav ---------- */
+  nav.tabs{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:4px;
+    margin-bottom:22px;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
+  }
+  nav.tabs::-webkit-scrollbar{display:none;}
+  nav.tabs button{
+    flex:0 0 auto;
+    background:var(--white);
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    padding:10px 18px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  nav.tabs button:hover{border-color:var(--gold);}
+  nav.tabs button.active{
+    background:var(--ink);
+    color:var(--cream);
+    border-color:var(--ink);
+  }
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:20px;
+  }
+  .card-top-stitch{
+    border-top:3px dashed var(--gold);
+  }
+
+  section{margin-bottom:26px;}
+  h2.section-title{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:20px;
+    margin:0 0 14px;
+    color:var(--ink);
+  }
+
+  /* ---------- Dashboard stat grid ---------- */
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px;
+  }
+  .stat{
+    padding:16px 18px;
+  }
+  .stat .label{
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .stat .value{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:600;
+    font-size:22px;
+    color:var(--ink);
+  }
+  .stat.profit .value{color:var(--green);}
+  .stat.due .value{color:var(--maroon);}
+
+  /* ---------- Forms ---------- */
+  .form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px 16px;
+  }
+  @media(max-width:640px){ .form-grid{grid-template-columns:1fr;} }
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field.full{grid-column:1 / -1;}
+  .field label{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+  }
+  .field input, .field textarea{
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    background:var(--cream-dim);
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s;
+  }
+  .field input:focus, .field textarea:focus{border-color:var(--gold);background:var(--white);}
+  .field textarea{resize:vertical;min-height:56px;font-family:'Inter',sans-serif;}
+
+  .computed-row{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    margin-top:16px;
+    padding:14px 16px;
+    background:var(--cream-dim);
+    border-radius:8px;
+    border:1px dashed var(--gold);
+  }
+  .computed-row div{font-size:13px;color:var(--ink-soft);}
+  .computed-row b{
+    display:block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:16px;
+    color:var(--ink);
+    margin-top:2px;
+  }
+
+  .btn-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  button.primary{
+    background:var(--ink);
+    color:var(--cream);
+    border:none;
+    padding:11px 22px;
+    border-radius:7px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  button.primary:hover{background:var(--maroon);}
+  button.secondary{
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    padding:11px 20px;
+    border-radius:7px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+  }
+  button.secondary:hover{border-color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-tools{
+    display:flex;
+    gap:10px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .table-tools input{
+    flex:1;
+    min-width:180px;
+    padding:9px 12px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    background:var(--white);
+    font-size:14px;
+  }
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    color:var(--ink-soft);
+    padding:8px 10px;
+    border-bottom:2px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:10px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody tr:hover{background:var(--cream-dim);}
+  td.num, th.num{font-family:'JetBrains Mono',monospace;text-align:right;}
+  .pill{
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:999px;
+    font-size:11.5px;
+    font-weight:600;
+  }
+  .pill.paid{background:#E4EEE5;color:var(--green);}
+  .pill.due{background:#F3E1E5;color:var(--maroon);}
+  .pill.partial{background:#F6EAD2;color:#8A6412;}
+  .row-actions button{
+    background:none;border:none;cursor:pointer;
+    color:var(--ink-soft);font-size:13px;font-weight:600;
+    margin-right:10px;text-decoration:underline;
+    padding:0;
+  }
+  .row-actions button:hover{color:var(--maroon);}
+  .empty-state{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+
+  /* customers grid */
+  .cust-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:14px;
+  }
+  .cust-card{
+    padding:16px 18px;
+    cursor:pointer;
+  }
+  .cust-card:hover{border-color:var(--gold);}
+  .cust-card .name{font-weight:700;font-size:15px;margin-bottom:2px;}
+  .cust-card .phone{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;}
+  .cust-card .rowmini{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
+  .cust-card .rowmini b{font-family:'JetBrains Mono',monospace;color:var(--ink);font-weight:600;}
+
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:var(--cream);
+    padding:11px 20px;border-radius:8px;font-size:13.5px;font-weight:600;
+    box-shadow:0 6px 20px rgba(0,0,0,0.25);
+    opacity:0;pointer-events:none;transition:opacity .25s;
+    z-index:50;
+  }
+  .toast.show{opacity:1;}
+
+  .loading{
+    text-align:center;padding:60px 20px;color:var(--ink-soft);font-size:14px;
+  }
+  .backlink{background:none;border:none;color:var(--gold);font-weight:700;cursor:pointer;font-size:13px;margin-bottom:12px;padding:0;text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="brand">
+    <div>
+      <div class="brand-name">Hayaabaya<span>'s</span> Collection</div>
+      <div class="brand-tag">Payments &amp; Profit Ledger · Hyderabad, Sindh</div>
+    </div>
+  </header>
+  <div class="stitch"></div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="entry">New Entry</button>
+    <button data-tab="ledger">All Entries</button>
+    <button data-tab="customers">Customers</button>
+  </nav>
+
+  <div id="main"><div class="loading">Loading your ledger…</div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'transactions';
+let transactions = [];
+let editingId = null;
+let dataReady = false;
+
+// ---------- storage helpers ----------
+async function loadData(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    transactions = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){
+    transactions = [];
+  }
+  dataReady = true;
+}
+async function saveData(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(transactions), false);
+  }catch(e){
+    showToast('Could not save — please try again');
+  }
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._tm);
+  showToast._tm = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function fmt(n){
+  n = Number(n)||0;
+  return 'Rs ' + n.toLocaleString('en-US', {maximumFractionDigits:0});
+}
+function todayStr(){
+  return new Date().toISOString().slice(0,10);
+}
+function uid(){
+  return 'tx_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+}
+
+// ---------- derived aggregates ----------
+function totals(){
+  let sales=0, cost=0, profit=0, received=0, due=0;
+  transactions.forEach(t=>{
+    sales += Number(t.salePrice)||0;
+    cost += Number(t.costPrice)||0;
+    received += Number(t.paid)||0;
+  });
+  profit = sales - cost;
+  due = sales - received;
+  return {sales, cost, profit, received, due};
+}
+function customerMap(){
+  const map = {};
+  transactions.forEach(t=>{
+    const key = (t.phone && t.phone.trim()) ? t.phone.trim() : t.customerName.trim().toLowerCase();
+    if(!map[key]) map[key] = {name:t.customerName, phone:t.phone, orders:0, sales:0, cost:0, paid:0};
+    map[key].orders += 1;
+    map[key].sales += Number(t.salePrice)||0;
+    map[key].cost += Number(t.costPrice)||0;
+    map[key].paid += Number(t.paid)||0;
+    map[key].name = t.customerName; // keep latest spelling
+    map[key].phone = t.phone;
+  });
+  return map;
+}
+
+// ---------- nav ----------
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-tab]');
+  if(!btn) return;
+  editingId = null;
+  setActiveTab(btn.dataset.tab);
+});
+function setActiveTab(tab){
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  render(tab);
+}
+
+// ---------- render router ----------
+function render(tab){
+  const main = document.getElementById('main');
+  if(!dataReady){ main.innerHTML = '<div class="loading">Loading your ledger…</div>'; return; }
+  if(tab==='dashboard') return renderDashboard(main);
+  if(tab==='entry') return renderEntry(main);
+  if(tab==='ledger') return renderLedger(main);
+  if(tab==='customers') return renderCustomers(main);
+  renderDashboard(main);
+}
+
+// ---------- Dashboard ----------
+function renderDashboard(main){
+  const t = totals();
+  const custCount = Object.keys(customerMap()).length;
+  main.innerHTML = `
+    <section>
+      <h2 class="section-title">Overview</h2>
+      <div class="stat-grid">
+        <div class="card stat"><div class="label">Total Sales</div><div class="value">${fmt(t.sales)}</div></div>
+        <div class="card stat"><div class="label">Total Cost</div><div class="value">${fmt(t.cost)}</div></div>
+        <div class="card stat profit"><div class="label">Profit</div><div class="value">${fmt(t.profit)}</div></div>
+        <div class="card stat"><div class="label">Received</div><div class="value">${fmt(t.received)}</div></div>
+        <div class="card stat due"><div class="label">Outstanding Due</div><div class="value">${fmt(t.due)}</div></div>
+        <div class="card stat"><div class="label">Orders</div><div class="value">${transactions.length}</div></div>
+        <div class="card stat"><div class="label">Customers</div><div class="value">${custCount}</div></div>
+      </div>
+    </section>
+    <section>
+      <h2 class="section-title">Recent Entries</h2>
+      ${renderMiniTable(transactions.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6))}
+    </section>
+  `;
+}
+function renderMiniTable(rows){
+  if(rows.length===0) return `<div class="card empty-state">No entries yet. Add your first payment from "New Entry".</div>`;
+  return `<div class="card table-wrap"><table>
+    <thead><tr><th>Date</th><th>Customer</th><th>Item</th><th class="num">Sale</th><th class="num">Paid</th><th>Status</th></tr></thead>
+    <tbody>${rows.map(r=>rowToHtml(r,false)).join('')}</tbody>
+  </table></div>`;
+}
+
+// ---------- New Entry / Edit ----------
+function renderEntry(main, prefill){
+  const t = prefill || {customerName:'',phone:'',item:'',costPrice:'',salePrice:'',paid:'',date:todayStr(),notes:''};
+  const isEdit = !!editingId;
+  const names = [...new Set(transactions.map(t=>t.customerName))];
+  main.innerHTML = `
+    <section>
+      <h2 class="section-title">${isEdit ? 'Edit Entry' : 'New Payment Entry'}</h2>
+      <div class="card card-top-stitch">
+        <div class="form-grid">
+          <div class="field">
+            <label>Customer Name</label>
+            <input list="cust-names" id="f-name" value="${escapeAttr(t.customerName)}" placeholder="e.g. Ayesha Khan">
+            <datalist id="cust-names">${names.map(n=>`<option value="${escapeAttr(n)}">`).join('')}</datalist>
+          </div>
+          <div class="field">
+            <label>Phone Number</label>
+            <input id="f-phone" value="${escapeAttr(t.phone)}" placeholder="03xx-xxxxxxx">
+          </div>
+          <div class="field full">
+            <label>Item / Order Description</label>
+            <input id="f-item" value="${escapeAttr(t.item)}" placeholder="e.g. Black embroidered abaya, size M">
+          </div>
+          <div class="field">
+            <label>Cost Price (your cost)</label>
+            <input id="f-cost" type="number" min="0" step="1" value="${t.costPrice}" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Sale Price (charged to customer)</label>
+            <input id="f-sale" type="number" min="0" step="1" value="${t.salePrice}" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Amount Paid So Far</label>
+            <input id="f-paid" type="number" min="0" step="1" value="${t.paid}" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Date</label>
+            <input id="f-date" type="date" value="${t.date}">
+          </div>
+          <div class="field full">
+            <label>Notes (optional)</label>
+            <textarea id="f-notes" placeholder="Delivery details, fabric, special requests…">${escapeHtml(t.notes)}</textarea>
+          </div>
+        </div>
+
+        <div class="computed-row" id="computed-row">
+          <div>Profit<b id="calc-profit">Rs 0</b></div>
+          <div>Balance Due<b id="calc-due">Rs 0</b></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="primary" id="save-entry">${isEdit ? 'Save Changes' : 'Add Entry'}</button>
+          ${isEdit ? '<button class="secondary" id="cancel-edit">Cancel</button>' : ''}
+        </div>
+      </div>
+    </section>
+  `;
+
+  const costEl=document.getElementById('f-cost'), saleEl=document.getElementById('f-sale'), paidEl=document.getElementById('f-paid');
+  function recalc(){
+    const cost = Number(costEl.value)||0, sale = Number(saleEl.value)||0, paid = Number(paidEl.value)||0;
+    document.getElementById('calc-profit').textContent = fmt(sale-cost);
+    document.getElementById('calc-due').textContent = fmt(sale-paid);
+  }
+  [costEl,saleEl,paidEl].forEach(el=>el.addEventListener('input', recalc));
+  recalc();
+
+  document.getElementById('save-entry').addEventListener('click', async ()=>{
+    const name = document.getElementById('f-name').value.trim();
+    if(!name){ showToast('Please enter a customer name'); return; }
+    const entry = {
+      id: editingId || uid(),
+      customerName: name,
+      phone: document.getElementById('f-phone').value.trim(),
+      item: document.getElementById('f-item').value.trim(),
+      costPrice: Number(document.getElementById('f-cost').value)||0,
+      salePrice: Number(document.getElementById('f-sale').value)||0,
+      paid: Number(document.getElementById('f-paid').value)||0,
+      date: document.getElementById('f-date').value || todayStr(),
+      notes: document.getElementById('f-notes').value.trim()
+    };
+    if(editingId){
+      const idx = transactions.findIndex(t=>t.id===editingId);
+      if(idx>-1) transactions[idx]=entry;
+      showToast('Entry updated');
+    }else{
+      transactions.push(entry);
+      showToast('Entry added');
+    }
+    editingId = null;
+    await saveData();
+    setActiveTab('ledger');
+  });
+
+  const cancelBtn = document.getElementById('cancel-edit');
+  if(cancelBtn) cancelBtn.addEventListener('click', ()=>{ editingId=null; setActiveTab('ledger'); });
+}
+
+// ---------- Ledger (all entries) ----------
+let ledgerFilter = '';
+function renderLedger(main){
+  main.innerHTML = `
+    <section>
+      <h2 class="section-title">All Entries</h2>
+      <div class="table-tools">
+        <input id="search-box" placeholder="Search by customer, item, or phone…" value="${escapeAttr(ledgerFilter)}">
+      </div>
+      <div id="ledger-table"></div>
+    </section>
+  `;
+  document.getElementById('search-box').addEventListener('input', e=>{
+    ledgerFilter = e.target.value;
+    drawLedgerTable();
+  });
+  drawLedgerTable();
+}
+function drawLedgerTable(){
+  const q = ledgerFilter.trim().toLowerCase();
+  let rows = transactions.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(q){
+    rows = rows.filter(r =>
+      r.customerName.toLowerCase().includes(q) ||
+      (r.item||'').toLowerCase().includes(q) ||
+      (r.phone||'').toLowerCase().includes(q)
+    );
+  }
+  const host = document.getElementById('ledger-table');
+  if(rows.length===0){
+    host.innerHTML = `<div class="card empty-state">No entries match. Try a different search, or add a new payment.</div>`;
+    return;
+  }
+  host.innerHTML = `<div class="card table-wrap"><table>
+    <thead><tr>
+      <th>Date</th><th>Customer</th><th>Phone</th><th>Item</th>
+      <th class="num">Cost</th><th class="num">Sale</th><th class="num">Profit</th>
+      <th class="num">Paid</th><th class="num">Due</th><th>Status</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${rows.map(r=>rowToHtml(r,true)).join('')}</tbody>
+  </table></div>`;
+
+  host.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>{
+    const t = transactions.find(x=>x.id===b.dataset.edit);
+    editingId = t.id;
+    setActiveTab('entry');
+    // renderEntry gets called by setActiveTab->render, but needs prefill; re-render directly:
+    renderEntry(document.getElementById('main'), t);
+  }));
+  host.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(!confirm('Delete this entry? This cannot be undone.')) return;
+    transactions = transactions.filter(t=>t.id!==b.dataset.del);
+    await saveData();
+    drawLedgerTable();
+    showToast('Entry deleted');
+  }));
+}
+function rowToHtml(r, withActions){
+  const due = (Number(r.salePrice)||0) - (Number(r.paid)||0);
+  const profit = (Number(r.salePrice)||0) - (Number(r.costPrice)||0);
+  let statusPill;
+  if(due<=0) statusPill = `<span class="pill paid">Paid</span>`;
+  else if((Number(r.paid)||0) === 0) statusPill = `<span class="pill due">Unpaid</span>`;
+  else statusPill = `<span class="pill partial">Partial</span>`;
+
+  if(!withActions){
+    return `<tr>
+      <td>${r.date}</td><td>${escapeHtml(r.customerName)}</td><td>${escapeHtml(r.item)}</td>
+      <td class="num">${fmt(r.salePrice)}</td><td class="num">${fmt(r.paid)}</td><td>${statusPill}</td>
+    </tr>`;
+  }
+  return `<tr>
+    <td>${r.date}</td><td>${escapeHtml(r.customerName)}</td><td>${escapeHtml(r.phone||'—')}</td>
+    <td>${escapeHtml(r.item||'—')}</td>
+    <td class="num">${fmt(r.costPrice)}</td><td class="num">${fmt(r.salePrice)}</td>
+    <td class="num">${fmt(profit)}</td><td class="num">${fmt(r.paid)}</td>
+    <td class="num">${fmt(due>0?due:0)}</td><td>${statusPill}</td>
+    <td class="row-actions">
+      <button data-edit="${r.id}">Edit</button><button data-del="${r.id}">Delete</button>
+    </td>
+  </tr>`;
+}
+
+// ---------- Customers ----------
+let selectedCustomerKey = null;
+function renderCustomers(main){
+  if(selectedCustomerKey) return renderCustomerDetail(main, selectedCustomerKey);
+  const map = customerMap();
+  const keys = Object.keys(map);
+  main.innerHTML = `
+    <section>
+      <h2 class="section-title">Customers</h2>
+      ${keys.length===0 ? `<div class="card empty-state">No customers yet. They'll appear here once you add entries.</div>` : `
+      <div class="cust-grid">
+        ${keys.map(k=>{
+          const c = map[k];
+          const due = c.sales - c.paid;
+          return `<div class="card cust-card" data-key="${escapeAttr(k)}">
+            <div class="name">${escapeHtml(c.name)}</div>
+            <div class="phone">${escapeHtml(c.phone||'No phone on file')}</div>
+            <div class="rowmini"><span>Orders</span><b>${c.orders}</b></div>
+            <div class="rowmini"><span>Total Sales</span><b>${fmt(c.sales)}</b></div>
+            <div class="rowmini"><span>Paid</span><b>${fmt(c.paid)}</b></div>
+            <div class="rowmini"><span>Due</span><b>${fmt(due>0?due:0)}</b></div>
+          </div>`;
+        }).join('')}
+      </div>`}
+    </section>
+  `;
+  main.querySelectorAll('.cust-card').forEach(el=>el.addEventListener('click', ()=>{
+    selectedCustomerKey = el.dataset.key;
+    renderCustomers(main);
+  }));
+}
+function renderCustomerDetail(main, key){
+  const map = customerMap();
+  const c = map[key];
+  if(!c){ selectedCustomerKey=null; return renderCustomers(main); }
+  const rows = transactions.filter(t=>{
+    const k = (t.phone && t.phone.trim()) ? t.phone.trim() : t.customerName.trim().toLowerCase();
+    return k===key;
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+  const due = c.sales - c.paid;
+  main.innerHTML = `
+    <button class="backlink" id="back-to-custs">← All Customers</button>
+    <section>
+      <h2 class="section-title">${escapeHtml(c.name)}</h2>
+      <div class="stat-grid" style="margin-bottom:20px;">
+        <div class="card stat"><div class="label">Orders</div><div class="value">${c.orders}</div></div>
+        <div class="card stat"><div class="label">Total Sales</div><div class="value">${fmt(c.sales)}</div></div>
+        <div class="card stat"><div class="label">Paid</div><div class="value">${fmt(c.paid)}</div></div>
+        <div class="card stat due"><div class="label">Due</div><div class="value">${fmt(due>0?due:0)}</div></div>
+      </div>
+      <div class="card table-wrap"><table>
+        <thead><tr><th>Date</th><th>Item</th><th class="num">Sale</th><th class="num">Paid</th><th class="num">Due</th><th>Status</th></tr></thead>
+        <tbody>${rows.map(r=>rowToHtml(r,false)).join('')}</tbody>
+      </table></div>
+    </section>
+  `;
+  document.getElementById('back-to-custs').addEventListener('click', ()=>{
+    selectedCustomerKey=null;
+    renderCustomers(main);
+  });
+}
+
+// ---------- utils ----------
+function escapeHtml(s){
+  return (s??'').toString().replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+// ---------- boot ----------
+(async function init(){
+  await loadData();
+  setActiveTab('dashboard');
+})();
+</script>
+</body>
+</html>
